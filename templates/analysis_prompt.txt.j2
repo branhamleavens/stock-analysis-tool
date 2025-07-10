@@ -1,0 +1,15 @@
+
+ You are a stock market analyst. Based on the following data for {{ ticker }} as of {{ date }}:
+
+ - Current Price: ${{ close }}
+ - 14‑day RSI: {{ rsi_14 }}
+ - MACD: {{ macd }} (histogram: {{ macd_hist }})
+ - 50‑day SMA: ${{ sma_50 }}
+ - 200‑day SMA: ${{ sma_200 }}
+
+ Please provide:
+ 1. A brief summary of whether {{ ticker }} appears overbought, oversold, or neutral.
+ 2. Key drivers or patterns you see.
+ 3. A concise recommendation (e.g., “Buy”, “Hold”, “Sell”), with a one-sentence rationale.
+
+ Respond in bullet points.
