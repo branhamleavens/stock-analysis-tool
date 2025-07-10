@@ -282,9 +282,9 @@ function StockInsights() {
               <span style={{ fontWeight: 700, fontSize: 18, color: '#222', letterSpacing: 1 }}>
                 {insight.ticker || (insight.indicators && insight.indicators.ticker)}
               </span>
-              <span style={{ color: '#888', fontSize: 13 }}>
+              {/* <span style={{ color: '#888', fontSize: 13 }}>
                 {(insight.date || (insight.indicators && insight.indicators.date))}
-              </span>
+              </span> */}
             </div>
             <div style={{ fontSize: 14, color: '#222', lineHeight: 1.6 }}>
               <ReactMarkdown

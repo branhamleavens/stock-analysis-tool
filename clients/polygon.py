@@ -5,12 +5,16 @@ import pandas_ta as ta
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from aws_lambda_powertools import Logger  # <-- Added
+from aiolimiter import AsyncLimiter
 
 logger = Logger(service="polygon_service")  # <-- Added
 
 load_dotenv()
 POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
 BASE_URL = "https://api.polygon.io"
+
+# Create a limiter: 5 requests per 60 seconds
+polygon_limiter = AsyncLimiter(5, 60)
 
 # Format: YYYY-MM-DD
 def get_date_range(days: int):
@@ -29,25 +33,26 @@ async def get_price_data(ticker: str, days: int = 60):
         "apiKey": POLYGON_API_KEY,
     }
 
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, params=params)
-        response.raise_for_status()
-        data = response.json()
-        logger.debug(f"Polygon API response for {ticker}: {data}")
-        results = data.get("results", [])
-        if not results:
-            logger.warning(f"No results in Polygon response for {ticker}")
-            return None
+    async with polygon_limiter:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+            logger.debug(f"Polygon API response for {ticker}: {data}")
+            results = data.get("results", [])
+            if not results:
+                logger.warning(f"No results in Polygon response for {ticker}")
+                return None
 
-        df = pd.DataFrame(results)
-        logger.debug(f"Initial DataFrame head for {ticker}:\n{df.head()}")
-        df["t"] = pd.to_datetime(df["t"], unit="ms")
-        df.set_index("t", inplace=True)
-        df.rename(columns={"c": "close"}, inplace=True)
+            df = pd.DataFrame(results)
+            logger.debug(f"Initial DataFrame head for {ticker}:\n{df.head()}")
+            df["t"] = pd.to_datetime(df["t"], unit="ms")
+            df.set_index("t", inplace=True)
+            df.rename(columns={"c": "close"}, inplace=True)
 
-        logger.debug(f"DataFrame after index and rename:\n{df.head()}")
+            logger.debug(f"DataFrame after index and rename:\n{df.head()}")
 
-        return df[["close"]]
+            return df[["close"]]
 
 async def get_technical_indicators(ticker: str):
     df = await fetch_all_price_data(ticker, days=1000)
