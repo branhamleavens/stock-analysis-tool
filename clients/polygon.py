@@ -85,6 +85,20 @@ async def get_technical_indicators(ticker: str):
     latest = df.iloc[-1]
     logger.debug(f"Latest indicators for {ticker} on {latest.name.date()}:\n{latest}")
 
+    # --- Fetch ticker overview from Polygon ---
+    overview_url = f"{BASE_URL}/v3/reference/tickers/{ticker.upper()}"
+    params = {"apiKey": POLYGON_API_KEY}
+    overview_data = None
+    async with polygon_limiter:
+        async with httpx.AsyncClient() as client:
+            try:
+                resp = await client.get(overview_url, params=params)
+                resp.raise_for_status()
+                overview_data = resp.json()
+                logger.debug(f"Polygon overview for {ticker}: {overview_data}")
+            except Exception as e:
+                logger.warning(f"Failed to fetch overview for {ticker}: {e}")
+
     return {
         "ticker": ticker.upper(),
         "close": round(latest["close"], 2),
@@ -94,6 +108,7 @@ async def get_technical_indicators(ticker: str):
         "sma_50": round(latest["sma_50"], 2),
         "sma_200": round(latest["sma_200"], 2),
         "date": latest.name.strftime("%Y-%m-%d"),
+        "overview": overview_data,  # <-- Added
     }
 
 async def fetch_all_price_data(ticker: str, days: int = 1000):

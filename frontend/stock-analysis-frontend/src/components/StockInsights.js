@@ -25,6 +25,77 @@ function StockInsights() {
     }
   };
 
+  // --- Company Overview Card ---
+  function CompanyOverview({ overview }) {
+    if (!overview || !overview.results) return null;
+    const o = overview.results;
+    return (
+      <div
+        className="company-overview"
+        style={{
+          background: '#f8f9fa',
+          borderRadius: '0.5rem',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+          padding: '1.25rem',
+          marginBottom: '2rem',
+          display: 'flex',
+          gap: '1.5rem',
+          alignItems: 'flex-start'
+        }}
+      >
+        {o.branding?.logo_url && (
+          <div style={{ flex: '0 0 auto', marginRight: '1rem' }}>
+            <img
+              src={o.branding.logo_url}
+              alt={`${o.name} logo`}
+              style={{ width: '64px', height: '64px', objectFit: 'contain', borderRadius: 8, background: '#fff', border: '1px solid #eee' }}
+            />
+          </div>
+        )}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: '1.15rem', color: '#222', marginBottom: 2 }}>
+            {o.name}
+            <span style={{ color: '#888', fontWeight: 400, fontSize: '1rem', marginLeft: 8 }}>
+              ({o.ticker})
+            </span>
+          </div>
+          <div style={{ fontSize: '0.95rem', color: '#555', marginBottom: 6 }}>
+            {o.description}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.93rem', color: '#444', marginTop: 8 }}>
+            <div>
+              <span style={{ color: '#888' }}>Exchange:</span> {o.primary_exchange}
+            </div>
+            <div>
+              <span style={{ color: '#888' }}>Market Cap:</span> {o.market_cap ? `$${(o.market_cap/1e9).toFixed(1)}B` : '—'}
+            </div>
+            <div>
+              <span style={{ color: '#888' }}>Employees:</span> {o.total_employees || '—'}
+            </div>
+            <div>
+              <span style={{ color: '#888' }}>Industry:</span> {o.sic_description}
+            </div>
+            <div>
+              <span style={{ color: '#888' }}>Listed:</span> {o.list_date}
+            </div>
+            <div>
+              <span style={{ color: '#888' }}>Website:</span>{' '}
+              <a href={o.homepage_url} target="_blank" rel="noopener noreferrer" style={{ color: '#0074D9', textDecoration: 'underline' }}>
+                {o.homepage_url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+              </a>
+            </div>
+          </div>
+          {o.address && (
+            <div style={{ color: '#888', fontSize: '0.92rem', marginTop: 8 }}>
+              {o.address.address1}, {o.address.city}, {o.address.state} {o.address.postal_code}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // --- Indicator Chart (unchanged) ---
   const IndicatorChart = ({ indicators }) => {
     if (!indicators) return null;
     const { close, rsi_14, macd, macd_hist, sma_50, sma_200 } = indicators;
@@ -87,13 +158,16 @@ function StockInsights() {
     };
 
     return (
-      <div style={{
-        marginTop: 32,
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 24,
-        maxWidth: 600
-      }}>
+      <div
+        className="indicator-grid"
+        style={{
+          marginTop: 32,
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 24,
+          maxWidth: 600
+        }}
+      >
         {/* RSI Block */}
         <div style={{
           background: '#f8f9fa',
@@ -185,6 +259,11 @@ function StockInsights() {
         gap: 10px !important;
         align-items: stretch !important;
       }
+      .company-overview {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+      }
     }
   `;
 
@@ -258,6 +337,11 @@ function StockInsights() {
 
       {insight && (
         <div style={{ marginTop: 20 }}>
+          {/* --- Company Overview Card --- */}
+          {insight.indicators && insight.indicators.overview && (
+            <CompanyOverview overview={insight.indicators.overview} />
+          )}
+
           {/* --- Summary Card Block --- */}
           <div
             className="summary-block"
@@ -282,9 +366,9 @@ function StockInsights() {
               <span style={{ fontWeight: 700, fontSize: 18, color: '#222', letterSpacing: 1 }}>
                 {insight.ticker || (insight.indicators && insight.indicators.ticker)}
               </span>
-              {/* <span style={{ color: '#888', fontSize: 13 }}>
-                {(insight.date || (insight.indicators && insight.indicators.date))}
-              </span> */}
+              <span style={{ color: '#888', fontSize: 13 }}>
+                {(insight.indicators && insight.indicators.date)}
+              </span>
             </div>
             <div style={{ fontSize: 14, color: '#222', lineHeight: 1.6 }}>
               <ReactMarkdown
