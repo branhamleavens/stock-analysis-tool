@@ -31,7 +31,10 @@ A Python FastAPI service that fetches historical stock data from Polygon.io, com
 
 ## Configuration
 
-Use .env.example as template for .env file.  (Insert API Keys)
+Use .env.example as template for .env file.  (Insert API Keys for Polygon & OpenAI)
+
+https://polygon.io
+https://platform.openai.com
 
 ## Usage
 
